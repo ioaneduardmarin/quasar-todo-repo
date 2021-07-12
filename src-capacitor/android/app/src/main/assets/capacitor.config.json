@@ -1,0 +1,10 @@
+{
+	"appId": "com.eduardmarin.todo",
+	"appName": "Quasar App",
+	"bundledWebRuntime": false,
+	"npmClient": "npm",
+	"webDir": "www",
+	"server": {
+		"url": "http://192.168.224.1:8080"
+	}
+}
