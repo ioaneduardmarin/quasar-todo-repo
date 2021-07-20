@@ -3,8 +3,8 @@ export default {
     async getTodoList() {
       let toBeReturned;
       await window.electron.invoke('load-todos').then((result) => {
-        if (result.errorMessage) {
-          toBeReturned = result.errorMessage;
+        if (result.errorCode) {
+          toBeReturned = result.errorCode;
         } else {
           toBeReturned = JSON.parse(result.data);
         }

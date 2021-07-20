@@ -19,6 +19,15 @@ import RootComponent from 'app/src/App.vue'
 import createRouter from 'app/src/router/index'
 
 
+  
+  import '@capacitor/core'
+    
+    // importing it so it can install itself (used by Quasar UI)
+    import { App as CapApp } from '@capacitor/app'
+    
+    
+  
+
 
 
 
@@ -35,11 +44,11 @@ export default async function (createAppFn, quasarUserOptions) {
   const app = createAppFn(RootComponent)
 
   
-  app.config.devtools = true
-  
 
   app.use(Quasar, quasarUserOptions)
 
+  
+  app.config.globalProperties.$q.capacitor = window.Capacitor
   
 
   // Expose the app, the router and the store.

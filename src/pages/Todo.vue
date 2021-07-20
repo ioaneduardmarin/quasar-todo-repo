@@ -101,7 +101,7 @@ export default defineComponent({
       try {
         const result = await todoDataHelper.functions.loadTodoList(this.$q.platform);
 
-        if (typeof result === 'string' || result instanceof String) {
+        if (result === 'ENOENT') {
           this.$q.notify({
             message: 'Add a todo item',
             color: 'primary',

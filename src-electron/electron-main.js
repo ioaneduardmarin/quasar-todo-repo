@@ -6,7 +6,7 @@ import {
 } from 'electron';
 import path from 'path';
 
-const fs = require('fs').promises;
+const fs = require('fs');
 
 try {
   if (process.platform === 'win32' && nativeTheme.shouldUseDarkColors === true) {
@@ -69,25 +69,81 @@ app.on('activate', () => {
   }
 });
 
+async function readTodoList(filePath) {
+  const readPromise = new Promise((resolve, reject) => {
+    fs.readFile(filePath, 'utf8', (err, file) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(file);
+      }
+    });
+  });
+
+  const result = await readPromise
+    .then((file) => ({ errorCode: null, data: file }))
+    .catch((err) => {
+      if (err.code !== 'ENOENT') {
+        alert(err);
+      }
+      return { errorCode: err.code, data: null };
+    });
+
+  return result;
+}
+
+async function accessTodoList(filePath) {
+  const accessPromise = new Promise((resolve, reject) => {
+    fs.access(filePath, fs.constants.F_OK, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+
+  const result = await accessPromise.then(() => ({ errorCode: null }))
+    .catch((err) => {
+      if (err.code !== 'ENOENT') {
+        alert(err);
+      }
+      return { errorCode: err.code, data: null };
+    });
+  return result;
+}
+
 ipcMain.handle('load-todos', async () => {
   let results;
-  try {
-    const filePath = app.getPath('appData');
-    results = await fs.readFile(`${filePath}/Electron/todoList.txt`, { encoding: 'utf-8' });
-  } catch (error) {
-    if (error.errno === -4058) {
-      return { errorMessage: 'File does not exist', data: null };
-    }
+  const filePath = app.getPath('appData');
+  const todoListPath = `${filePath}/Electron/todoList.txt`;
+
+  results = await accessTodoList(todoListPath);
+  if (results.errorCode !== null) {
+    return results;
   }
 
-  return { errorMessage: null, data: results };
+  results = await readTodoList(todoListPath);
+
+  return results;
 });
+
+function writeTodoList(filePath, arg) {
+  const writePromise = new Promise((resolve, reject) => {
+    fs.writeFile(filePath, arg, 'utf8', (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+
+  writePromise.then().catch((err) => { alert(err); });
+}
 
 ipcMain.handle('save-todos', async (event, arg) => {
   const filePath = app.getPath('appData');
-  try {
-    await fs.writeFile(`${filePath}/Electron/todoList.txt`, arg, { encoding: 'utf-8' });
-  } catch (error) {
-    alert(error);
-  }
+  const todoListPath = `${filePath}/Electron/todoList.txt`;
+  writeTodoList(todoListPath, arg);
 });
